@@ -43,7 +43,7 @@
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
-	<haxelib name="hxCodec" if="windows || linux || android" />
+	<haxelib name="hxCodec" if="desktop || android" />
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

@@ -1,7 +1,7 @@
 package hxcodec.lime;
 
-#if (!(windows || linux || android) && macro)
-#error "The current target platform isn't supported by hxCodec. If you're targeting Windows/Linux/Android and getting this message, please contact us."
+#if (!(desktop || android) && macro)
+#error "The current target platform isn't supported by hxCodec. If you're targeting Windows/Mac/Linux/Android and getting this message, please contact us."
 #end
 import haxe.io.Path;
 import hxcodec.vlc.LibVLC;
@@ -131,10 +131,14 @@ class MediaPlayer
 		onBackward = new Event<Void->Void>();
 		onMediaChanged = new Event<Void->Void>();
 
-		#if windows
-		untyped __cpp__('const char *argv[] = { "--reset-plugins-cache" }');
+		#if mac
+		Sys.putEnv("VLC_PLUGIN_PATH", Path.directory(Sys.programPath()) + '/plugins');
+		#end
 
-		instance = LibVLC.create(1, untyped __cpp__('argv'));
+		#if (windows || mac)
+		untyped __cpp__('const char *argv[] = { "--reset-config", "--reset-plugins-cache" }');
+
+		instance = LibVLC.create(2, untyped __cpp__('argv'));
 		#else
 		instance = LibVLC.create(0, untyped __cpp__('NULL'));
 		#end
@@ -222,16 +226,6 @@ class MediaPlayer
 		}
 
 		events.splice(0, events.length);
-
-		onOpening.removeAll();
-		onPlaying.removeAll();
-		onStopped.removeAll();
-		onPaused.removeAll();
-		onEndReached.removeAll();
-		onEncounteredError.removeAll();
-		onForward.removeAll();
-		onBackward.removeAll();
-		onMediaChanged.removeAll();
 
 		if (instance != null)
 		{
