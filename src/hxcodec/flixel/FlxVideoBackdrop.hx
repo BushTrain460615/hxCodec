@@ -1,37 +1,42 @@
 package hxcodec.flixel;
 
 #if flixel
+#if (!flixel_addons && macro)
+#error 'Your project must use flixel-addons in order to use this class.'
+#end
+	
 import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.util.FlxColor;
+import flixel.util.FlxAxes;
+import flixel.addons.display.FlxBackdrop;
 
 import sys.FileSystem;
 import hxcodec.openfl.Video;
 
 /**
- * This class allows you to play videos using sprites (FlxSprite).
+ * This class allows you to play videos as `FlxBackdrop`s.
  */
-class FlxVideoSprite extends FlxSprite
+class FlxVideoBackdrop extends FlxBackdrop
 {
-	// Variables
-	public var bitmap(default, null):Video;
+        // Variables
+        public var bitmap(default, null):Video;
 
-	public function new(x:Float = 0, y:Float = 0):Void
-	{
-		super(x, y);
+	public function new(x:Float = 0, y:Float = 0, repeatAxes:FlxAxes = XY):Void
+        {
+                super(null, repeatAxes);
+                setPosition(x, y);
+                visible = false;
 
-		makeGraphic(1, 1, FlxColor.TRANSPARENT);
-
-		bitmap = new Video();
-		bitmap.alpha = 0;
-		bitmap.onOpening.add(function()
-		{
-			#if FLX_SOUND_SYSTEM
-			bitmap.volume = Std.int((FlxG.sound.muted ? 0 : 1) * (FlxG.sound.volume * 100));
-			#end
-		});
-		bitmap.onTextureSetup.add(() -> loadGraphic(bitmap.bitmapData));
-		FlxG.game.addChild(bitmap);
+	        bitmap = new Video();
+	        bitmap.alpha = 0;
+	        bitmap.onOpening.add(function()
+                {
+                      visible = true;
+		      #if FLX_SOUND_SYSTEM
+		      bitmap.volume = Std.int((FlxG.sound.muted ? 0 : 1) * (FlxG.sound.volume * 100));
+		      #end
+	        });
+	        bitmap.onTextureSetup.add(() -> loadGraphic(bitmap.bitmapData));
+	        FlxG.game.addChild(bitmap);
 	}
 
 	// Methods
@@ -50,11 +55,11 @@ class FlxVideoSprite extends FlxSprite
 		{
 			if (FileSystem.exists(Sys.getCwd() + location))
 				return bitmap.play(Sys.getCwd() + location, shouldLoop);
-			else
-				return bitmap.play(location, shouldLoop);
+
+			return bitmap.play(location, shouldLoop);
 		}
-		else
-			return -1;
+
+		return -1;
 	}
 
 	public function stop():Void
@@ -91,17 +96,17 @@ class FlxVideoSprite extends FlxSprite
 		super.update(elapsed);
 	}
 
-	override public function kill():Void
-	{
-		pause();
-		super.kill();
-	}
+        override function kill():Void
+        {
+                pause();
+                super.kill();
+        }
 
-	override public function revive():Void
-	{
-		super.revive();
-		resume();
-	}
+        override function revive():Void
+        {
+                super.revive();
+                resume();
+        }
 
 	override public function destroy():Void
 	{
